@@ -1,0 +1,25 @@
+
+parameters:
+  appname: '$(WebAppNameDev)'  # defaults for any parameters that aren't specified
+  environment: 'dev'
+  buildConfiguration: 'Release'
+
+jobs:
+- deployment: Deploy
+  pool:
+    vmImage: 'ubuntu-16.04'
+  environment: ${{ parameters.environment }}
+  variables:
+  - group: ${{ parameters.buildConfiguration }}
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: drop
+        - task: AzureWebApp@1
+          displayName: 'Azure App Service Deploy: website'
+          inputs:
+            azureSubscription: 'Resource Manager - Tailspin - Space Game'
+            appName: ${{ parameters.appname }}
+            package: '$(Pipeline.Workspace)/drop/${{ parameters.buildConfiguration }}/*.zip'
